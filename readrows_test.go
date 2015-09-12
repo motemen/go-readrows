@@ -92,6 +92,39 @@ func TestScan(t *testing.T) {
 	t.Log(r)
 }
 
+func TestScan_Embedded(t *testing.T) {
+	assert := assert.New(t)
+
+	type TextBool struct {
+		Text string `db:"text"`
+		Bool bool   `db:"bool"`
+	}
+	type record struct {
+		ID int `db:"id"`
+		TextBool
+		DateTime time.Time `db:"dt"`
+	}
+
+	rows, err := db.Query("SELECT * FROM foo WHERE id = 1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rows.Err() != nil {
+		t.Fatal(rows.Err())
+	}
+
+	var r []record
+
+	err = Scan(&r, rows)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal("foo", r[0].Text)
+
+	t.Logf("%+v", r)
+}
+
 func TestToSnakeCase(t *testing.T) {
 	assert := assert.New(t)
 

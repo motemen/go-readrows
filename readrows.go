@@ -6,7 +6,21 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"regexp"
+	"strings"
 )
+
+func visitStructFields(t reflect.Type, cb func(f reflect.StructField)) {
+	numField := t.NumField()
+	for i := 0; i < numField; i++ {
+		f := t.Field(i)
+		if f.Anonymous {
+			visitStructFields(f.Type, cb)
+		} else {
+			cb(f)
+		}
+	}
+}
 
 // Scan reads rows to a given pointer to slice v.
 // The "db" tag in the struct type definition is used to map
@@ -23,19 +37,17 @@ func Scan(v interface{}, rows *sql.Rows) error {
 
 	sliceValue, itemType, itemIsPtr, err := resolveReflection(v)
 
-	numField := itemType.NumField()
-	fieldMap := make(map[string]string, numField) // column to field name
+	// column name to field name
+	fieldMap := map[string]string{}
 
-	for i := 0; i < numField; i++ {
-		f := itemType.Field(i)
-
+	visitStructFields(itemType, func(f reflect.StructField) {
 		colName := f.Tag.Get("db")
 		if colName == "" {
 			colName = toSnakeCase(f.Name)
 		}
 
 		fieldMap[colName] = f.Name
-	}
+	})
 
 	for rows.Next() {
 		// type: *elem
