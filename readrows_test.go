@@ -91,3 +91,18 @@ func TestScan(t *testing.T) {
 
 	t.Log(r)
 }
+
+func TestToSnakeCase(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := map[string]string{
+		"FooBar":    "foo_bar",
+		"FooBarBaz": "foo_bar_baz",
+		"URLPrefix": "url_prefix",
+		"ID":        "id",
+		"FooID":     "foo_id",
+	}
+	for f, t := range tests {
+		assert.Equal(t, toSnakeCase(f))
+	}
+}

@@ -105,9 +105,31 @@ func resolveReflection(v interface{}) (sliceValue reflect.Value, itemType reflec
 	return
 }
 
-func toSnakeCase(name string) string {
-	// TODO
-	return name
+var re = regexp.MustCompile(`^([[:upper:]]*)([[:upper:]])([^[:upper:]]+)`)
+
+func toSnakeCase(s string) string {
+	parts := []string{}
+
+	for {
+		pos := re.FindStringSubmatchIndex(s)
+		if pos == nil {
+			break
+		}
+
+		if pos[2]+1 < pos[3] {
+			parts = append(parts, s[pos[2]:pos[3]])
+		}
+
+		parts = append(parts, s[pos[4]:pos[7]])
+
+		s = s[pos[1]:]
+	}
+
+	if len(s) > 0 {
+		parts = append(parts, s)
+	}
+
+	return strings.ToLower(strings.Join(parts, "_"))
 }
 
 type emptyScanner struct{}
