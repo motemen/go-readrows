@@ -139,3 +139,21 @@ func TestToSnakeCase(t *testing.T) {
 		assert.Equal(t, toSnakeCase(f))
 	}
 }
+
+func ExampleScan() {
+	type record struct {
+		ID       int       `db:"id"`
+		Text     string    `db:"text"`
+		Bool     bool      `db:"bool"`
+		DateTime time.Time `db:"dt"`
+	}
+
+	var r []record
+
+	rows, _ := db.Query("SELECT * FROM foo")
+
+	err := Scan(&r, rows)
+	if err != nil {
+		panic(err)
+	}
+}
